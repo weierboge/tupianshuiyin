@@ -31,6 +31,8 @@
             display: block;
             font-size: 18px;
             color: #333;
+            border: 1px solid #ccc;
+            padding: 5px;
         }
 
         .input input[type="file"] {
@@ -62,12 +64,14 @@
             display: block;
             font-size: 18px;
             color: #333;
+            border: 1px solid #ccc;
+            padding: 5px;
         }
 
         .output canvas {
             width: 600px;
             height: 400px;
-            border: 1px solid #ccc;
+            border: 3px solid #333; // 加上深色边框
         }
 
         .output button {
@@ -93,6 +97,8 @@
             display: block;
             font-size: 18px;
             color: #333;
+            border: 1px solid #ccc;
+            padding: 5px;
         }
 
         .settings input[type="text"] {
@@ -130,6 +136,8 @@
               <input type="range" id="size" value="50" min="10" max="100" onchange="drawWatermark()">
               <label for="angle">水印角度</label>
               <input type="range" id="angle" value="-45" min="-90" max="90" onchange="drawWatermark()">
+              <label for="opacity">水印透明度</label> // 增加水印透明度选项
+              <input type="range" id="opacity" value="0.5" min="0" max="1" step ="0.01" onchange ="drawWatermark()"> // 增加水印透明度选项
           </div>
       </div>
     </div>
@@ -144,6 +152,7 @@
       var number = document.getElementById("number");
       var size = document.getElementById("size");
       var angle = document.getElementById("angle");
+      var opacity = document.getElementById("opacity"); // 获取水印透明度元素
 
       // 创建图片对象
       var image = new Image();
@@ -187,7 +196,7 @@
         // 绘制图片到画布
         ctx.drawImage(image, x, y, w, h);
       }
-        
+
       // 绘制水印
       function drawWatermark() {
         // 清空画布
@@ -202,10 +211,12 @@
         var s = size.value;
         // 获取水印角度（转换为弧度）
         var a = angle.value * Math.PI / 180;
+        // 获取水印透明度 // 获取水印透明度
+        var o = opacity.value; // 获取水印透明度
         // 设置字体样式
         ctx.font = s + "px Arial";
-        // 设置字体颜色（半透明）
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        // 设置字体颜色（根据透明度） // 设置字体颜色（根据透明度）
+        ctx.fillStyle = "rgba(0, 0, 0, " + o + ")"; // 设置字体颜色（根据透明度）
         // 设置文本对齐方式（居中）
         ctx.textAlign = "center";
         // 设置文本基线（中间）
@@ -227,8 +238,8 @@
             // 如果索引超过水印数量，跳出循环
             if (index >= num) break;
             // 计算水印位置（根据索引和间隔）
-            var x = canvas.width / 2 + (j - (cols - 1) / 2) * dx;
-            var y = canvas.height / 2 + (i - (rows - 1) / 2) * dy;
+            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
+            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
 
             // 保存画布状态
             ctx.save();
@@ -251,6 +262,116 @@
       }
 
       // 生成图片
+      download.onclick = function() {
+        // 创建一个新的画布，用于输出图片
+        var outputCanvas = document.createElement("canvas");
+        // 设置新画布的尺寸为图片的原始尺寸
+        outputCanvas.width = image.width;
+        outputCanvas.height = image.height;
+        ctx.textAlign = "center";
+        // 设置文本基线（中间）
+        ctx.textBaseline = "middle";
+        
+        // 计算水印间隔（根据角度和大小）
+        var dx = s * Math.cos(a);
+        var dy = s * Math.sin(a);
+
+
+        // 计算水印行数和列数（根据图片尺寸和水印数量）
+        var rows = Math.ceil(Math.sqrt(num));
+        var cols = Math.ceil(num / rows);
+
+
+        // 遍历水印行数和列数，绘制每个水印
+        for (var i = 0; i < rows; i++) {
+          for (var j = 0; j < cols; j++) {
+            // 计算水印索引
+            var index = i * cols + j;
+            // 如果索引超过水印数量，跳出循环
+            if (index >= num) break;
+            // 计算水印位置（根据索引和间隔）
+            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
+            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
+
+
+            // 保存画布状态
+            ctx.save();
+            // 移动画布原点到水印位置
+            ctx.translate(x, y);
+            // 旋转画布到水印角度
+            ctx.rotate(a);
+            // 绘制水印文字到画布
+            ctx.fillText(txt, 0, 0);
+            // 恢复画布状态
+            ctx.restore();
+          }
+        }
+      }
+
+
+      // 上传图片
+      upload.onclick = function() {
+        // 触发文件选择器的点击事件
+        file.click();
+      }
+
+
+      // 生成图片
+      download.onclick = function() {
+        // 创建一个新的画布，用于输出图片
+        var outputCanvas = document.createElement("canvas");
+         Set the size of the new canvas to the original size of the picture
+        outputCanvas.width = image.width;
+        outputCanvas.height = image.height;
+        ctx.textAlign = "center";
+        // 设置文本基线（中间）
+        ctx.textBaseline = "middle";
+        
+        // 计算水印间隔（根据角度和大小）
+        var dx = s * Math.cos(a);
+        var dy = s * Math.sin(a);
+
+
+        // 计算水印行数和列数（根据图片尺寸和水印数量）
+        var rows = Math.ceil(Math.sqrt(num));
+        var cols = Math.ceil(num / rows);
+
+
+        // 遍历水印行数和列数，绘制每个水印
+        for (var i = 0; i < rows; i++) {
+          for (var j = 0; j < cols; j++) {
+            // 计算水印索引
+            var index = i * cols + j;
+            // 如果索引超过水印数量，跳出循环
+            if (index >= num) break;
+            // 计算水印位置（根据索引和间隔）
+            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
+            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
+
+
+            // 保存画布状态
+            ctx.save();
+            // 移动画布原点到水印位置
+            ctx.translate(x, y);
+            // 旋转画布到水印角度
+            ctx.rotate(a);
+            // 绘制水印文字到画布
+            ctx.fillText(txt, 0, 0);
+            // 恢复画布状态
+            ctx.restore();
+          }
+        }
+      }
+
+
+      // 上传图片
+      upload.onclick = function() {
+        // 触发文件选择器的点击事件
+        file.click();
+      }
+
+
+// 生成图片
       download.onclick = function() {
         // 创建一个新的画布，用于输出图片
         var outputCanvas = document.createElement("canvas");
@@ -284,10 +405,12 @@
         var s = size.value;
         // 获取水印角度（转换为弧度）
         var a = angle.value * Math.PI / 180;
+        // 获取水印透明度 // 获取水印透明度
+        var o = opacity.value; // 获取水印透明度
         // 设置字体样式
         outputCtx.font = s + "px Arial";
-        // 设置字体颜色（半透明）
-        outputCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        // 设置字体颜色（根据透明度） // 设置字体颜色（根据透明度）
+        outputCtx.fillStyle = "rgba(0, 0, 0, " + o + ")"; // 设置字体颜色（根据透明度）
         // 设置文本对齐方式（居中）
         outputCtx.textAlign = "center";
         // 设置文本基线（中间）

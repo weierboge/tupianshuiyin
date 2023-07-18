@@ -54,6 +54,8 @@
 
         .output {
             margin-top: 20px;
+            display: flex;
+            align-items: center;
         }
 
         .output label {
@@ -65,7 +67,7 @@
         .output canvas {
             width: 600px;
             height: 400px;
-               border: 1px solid #ccc;
+            border: 1px solid #ccc;
         }
 
         .output button {
@@ -84,7 +86,7 @@
         }
 
         .settings {
-            margin-top: 20px;
+            margin-left: 20px;
         }
 
         .settings label {
@@ -106,7 +108,7 @@
     </style>
 </head>
 <body>
-    <h1>图片加水印</h1>
+    <h1>图片加水印工具</h1>
     <div class="container">
         <div class="input">
           <label for="file">选择图片</label>
@@ -114,19 +116,21 @@
           <button id="upload">上传图片</button>
       </div>
       <div class="output">
-          <label for="canvas">预览效果</label>
-          <canvas id="canvas"></canvas>
-          <button id="download">生成图片</button>
-      </div>
-      <div class="settings">
-          <label for="text">水印文字</label>
-          <input type="text" id="text" value="Bing" onchange="drawWatermark()">
-          <label for="number">水印数量</label>
-          <input type="range" id="number" value="5" min="1" max="10" onchange="drawWatermark()">
-          <label for="size">水印大小</label>
-          <input type="range" id="size" value="50" min="10" max="100" onchange="drawWatermark()">
-          <label for="angle">水印角度</label>
-          <input type="range" id="angle" value="-45" min="-90" max="90" onchange="drawWatermark()">
+          <div class="preview">
+              <label for="canvas">预览效果</label>
+              <canvas id="canvas"></canvas>
+              <button id="download">生成图片</button>
+          </div>
+          <div class="settings">
+              <label for="text">水印文字</label>
+              <input type="text" id="text" value="Bing" onchange="drawWatermark()">
+              <label for="number">水印数量</label>
+              <input type="range" id="number" value="5" min="1" max="100" onchange="drawWatermark()">
+              <label for="size">水印大小</label>
+              <input type="range" id="size" value="50" min="10" max="100" onchange="drawWatermark()">
+              <label for="angle">水印角度</label>
+              <input type="range" id="angle" value="-45" min="-90" max="90" onchange="drawWatermark()">
+          </div>
       </div>
     </div>
 
@@ -183,7 +187,7 @@
         // 绘制图片到画布
         ctx.drawImage(image, x, y, w, h);
       }
-
+        
       // 绘制水印
       function drawWatermark() {
         // 清空画布
@@ -211,22 +215,32 @@
         var dx = s * Math.cos(a);
         var dy = s * Math.sin(a);
 
-        // 遍历水印数量，绘制每个水印
-        for (var i = 0; i < num; i++) {
-          // 计算水印位置（根据索引和间隔）
-          var x = canvas.width / 2 + i * dx;
-          var y = canvas.height / 2 + i * dy;
+        // 计算水印行数和列数（根据图片尺寸和水印数量）
+        var rows = Math.ceil(Math.sqrt(num));
+        var cols = Math.ceil(num / rows);
 
-          // 保存画布状态
-          ctx.save();
-          // 移动画布原点到水印位置
-          ctx.translate(x, y);
-          // 旋转画布到水印角度
-          ctx.rotate(a);
-          // 绘制水印文字到画布
-          ctx.fillText(txt, 0, 0);
-          // 恢复画布状态
-          ctx.restore();
+        // 遍历水印行数和列数，绘制每个水印
+        for (var i = 0; i < rows; i++) {
+          for (var j = 0; j < cols; j++) {
+            // 计算水印索引
+            var index = i * cols + j;
+            // 如果索引超过水印数量，跳出循环
+            if (index >= num) break;
+            // 计算水印位置（根据索引和间隔）
+            var x = canvas.width / 2 + (j - (cols - 1) / 2) * dx;
+            var y = canvas.height / 2 + (i - (rows - 1) / 2) * dy;
+
+            // 保存画布状态
+            ctx.save();
+            // 移动画布原点到水印位置
+            ctx.translate(x, y);
+            // 旋转画布到水印角度
+            ctx.rotate(a);
+            // 绘制水印文字到画布
+            ctx.fillText(txt, 0, 0);
+            // 恢复画布状态
+            ctx.restore();
+          }
         }
       }
 
@@ -238,8 +252,19 @@
 
       // 生成图片
       download.onclick = function() {
-        // 获取画布的数据URL
-        var dataURL = canvas.toDataURL();
+        // 创建一个新的画布，用于输出图片
+        var outputCanvas = document.createElement("canvas");
+        // 设置新画布的尺寸为图片的原始尺寸
+        outputCanvas.width = image.width;
+        outputCanvas.height = image.height;
+        // 获取新画布的上下文
+        var outputCtx = outputCanvas.getContext("2d");
+        // 绘制图片到新画布
+        outputCtx.drawImage(image, 0, 0);
+        // 绘制水印到新画布
+        drawWatermarkToOutput(outputCtx);
+        // 获取新画布的数据URL
+        var dataURL = outputCanvas.toDataURL();
         // 创建下载链接
         var link = document.createElement("a");
         // 设置下载链接的属性
@@ -247,6 +272,58 @@
         link.download = "watermarked-image.png";
         // 触发下载链接的点击事件
         link.click();
+      }
+
+      // 绘制水印到输出画布
+      function drawWatermarkToOutput(outputCtx) {
+        // 获取水印文字
+        var txt = text.value;
+        // 获取水印数量
+        var num = number.value;
+        // 获取水印大小
+        var s = size.value;
+        // 获取水印角度（转换为弧度）
+        var a = angle.value * Math.PI / 180;
+        // 设置字体样式
+        outputCtx.font = s + "px Arial";
+        // 设置字体颜色（半透明）
+        outputCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        // 设置文本对齐方式（居中）
+        outputCtx.textAlign = "center";
+        // 设置文本基线（中间）
+        outputCtx.textBaseline = "middle";
+        
+        // 计算水印间隔（根据角度和大小）
+        var dx = s * Math.cos(a);
+        var dy = s * Math.sin(a);
+
+        // 计算水印行数和列数（根据图片尺寸和水印数量）
+        var rows = Math.ceil(Math.sqrt(num));
+        var cols = Math.ceil(num / rows);
+
+        // 遍历水印行数和列数，绘制每个水印
+        for (var i = 0; i < rows; i++) {
+          for (var j = 0; j < cols; j++) {
+            // 计算水印索引
+            var index = i * cols + j;
+            // 如果索引超过水印数量，跳出循环
+            if (index >= num) break;
+            // 计算水印位置（根据索引和间隔）
+            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
+            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
+
+            // 保存画布状态
+            outputCtx.save();
+            // 移动画布原点到水印位置
+            outputCtx.translate(x, y);
+            // 旋转画布到水印角度
+            outputCtx.rotate(a);
+            // 绘制水印文字到画布
+            outputCtx.fillText(txt, 0, 0);
+            // 恢复画布状态
+            outputCtx.restore();
+          }
+        }
       }
     </script>
 </body>

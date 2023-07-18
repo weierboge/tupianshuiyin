@@ -53,8 +53,7 @@
             cursor: pointer;
         }
 
-        .button {
-            width: 100%;
+        .button {            width: 100%;
             height: 40px;
             border: none;
             border-radius: 5px;
@@ -120,7 +119,6 @@
                 <span id="angle-value">45</span>
             </div>
             <input type="range" id="input-angle" class="slider" min="-90" max="90" value="45">
-            <button type="submit" id="submit-button" class="button">生成水印图片</button>
         </form>
         <img src="" id="preview-image" class="preview">
     </div>
@@ -136,7 +134,6 @@
         const sizeValue = document.getElementById("size-value");
         const inputAngle = document.getElementById("input-angle");
         const angleValue = document.getElementById("angle-value");
-        const submitButton = document.getElementById("submit-button");
         const previewImage = document.getElementById("preview-image");
 
         // 定义变量
@@ -146,55 +143,8 @@
         let watermarkSize; // 水印大小
         let watermarkAngle; // 水印角度
 
-        // 监听文件输入框的变化
-        inputFile.addEventListener("change", function() {
-            // 获取选择的文件
-            imageFile = this.files[0];
-            // 读取文件内容
-            const reader = new FileReader();
-            reader.readAsDataURL(imageFile);
-            reader.onload = function() {
-                // 显示文件名
-                labelFile.textContent = imageFile.name;
-                // 预览图片
-                previewImage.src = this.result;
-            };
-        });
-
-        // 监听文本输入框的变化
-        inputText.addEventListener("input", function() {
-            // 获取输入的文字
-            watermarkText = this.value;
-        });
-
-        // 监听数量滑块的变化
-        inputNumber.addEventListener("input", function() {
-            // 获取滑块的值
-            watermarkNumber = this.value;
-            // 显示滑块的值
-            numberValue.textContent = watermarkNumber;
-        });
-
-        // 监听大小滑块的变化
-        inputSize.addEventListener("input", function() {
-            // 获取滑块的值
-            watermarkSize = this.value;
-            // 显示滑块的值
-            sizeValue.textContent = watermarkSize;
-        });
-
-        // 监听角度滑块的变化
-        inputAngle.addEventListener("input", function() {
-            // 获取滑块的值
-            watermarkAngle = this.value;
-            // 显示滑块的值
-            angleValue.textContent = watermarkAngle;
-        });
-
-        // 监听表单的提交事件
-        form.addEventListener("submit", function(event) {
-            // 阻止默认行为
-            event.preventDefault();
+        // 定义函数
+        function drawImage() {
             // 判断是否有图片和文字
             if (imageFile && watermarkText) {
                 // 创建画布元素
@@ -234,10 +184,66 @@
                     previewImage.src = canvas.toDataURL();
                 };
             } else {
-                // 提示用户输入图片和文字
-                alert("请上传图片并输入水印文字");
+                // 设置预览区域为纯白色
+                previewImage.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
             }
+        }
+
+        // 监听文件输入框的变化
+        inputFile.addEventListener("change", function() {
+            // 获取选择的文件
+            imageFile = this.files[0];
+            // 读取文件内容
+            const reader = new FileReader();
+            reader.readAsDataURL(imageFile);
+            reader.onload = function() {
+                // 显示文件名
+                labelFile.textContent = imageFile.name;
+                // 预览图片
+                previewImage.src = this.result;
+                // 绘制水印图片
+                drawImage();
+            };
+        });
+
+        // 监听文本输入框的变化
+        inputText.addEventListener("input", function() {
+            // 获取输入的文字
+            watermarkText = this.value;
+            // 绘制水印图片
+            drawImage();
+        });
+
+        // 监听数量滑块的变化
+        inputNumber.addEventListener("input", function() {
+            // 获取滑块的值
+            watermarkNumber = this.value;
+            // 显示滑块的值
+            numberValue.textContent = watermarkNumber;
+            // 绘制水印图片
+            drawImage();
+        });
+
+        // 监听大小滑块的变化
+        inputSize.addEventListener("input", function() {
+            // 获取滑块的值
+            watermarkSize = this.value;
+            // 显示滑块的值
+            sizeValue.textContent = watermarkSize;
+            // 绘制水印图片
+            drawImage();
+        });
+
+        // 监听角度滑块的变化
+        inputAngle.addEventListener("input", function() {
+            // 获取滑块的值
+            watermarkAngle = this.value;
+            // 显示滑块的值
+            angleValue.textContent = watermarkAngle;
+            // 绘制水印图片
+            drawImage();
         });
     </script>
 </body>
 </html>
+

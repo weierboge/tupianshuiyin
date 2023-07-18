@@ -17,23 +17,23 @@
         }
 
         .title {
-            font-size: 24px;
+            font-size: 36px;
             font-weight: bold;
-            color: #333;
+            color: #0099ff;
             margin-bottom: 10px;
         }
 
         .subtitle {
-            font-size: 18px;
-            color: #666;
+            font-size: 24px;
+            color: #333;
             margin-bottom: 20px;
         }
 
         .input {
             width: 100%;
             height: 40px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: none;
+            border-bottom: 2px solid #0099ff;
             padding: 10px;
             font-size: 16px;
         }
@@ -45,15 +45,15 @@
         .label-file {
             width: 100%;
             height: 40px;
-            border: 1px dashed #ccc;
-            border-radius: 5px;
+            border-bottom: 2px dashed #0099ff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
 
-        .button {            width: 100%;
+        .button {
+            width: 100%;
             height: 40px;
             border: none;
             border-radius: 5px;
@@ -69,6 +69,7 @@
             height: auto;
             margin-top: 20px;
             position: relative;
+            border: 5px solid #0099ff;
         }
 
         .watermark {
@@ -184,8 +185,8 @@
                     previewImage.src = canvas.toDataURL();
                 };
             } else {
-                // 设置预览区域为纯白色
-                previewImage.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+                // 设置预览区域为灰色
+                previewImage.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
             }
         }
 
@@ -246,4 +247,3 @@
     </script>
 </body>
 </html>
-

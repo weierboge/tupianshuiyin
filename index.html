@@ -1,453 +1,276 @@
 <html>
 <head>
     <style>
+        /* 设置页面的样式 */
         body {
-            font-family: "黑体", Arial, Helvetica, sans-serif;
-            background-color: white;
-            margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
         }
 
         h1 {
             text-align: center;
-            color: #333;
-            font-size: 36px;
-            margin-top: 50px;
+            color: #333333;
         }
 
         .container {
             width: 800px;
-            margin: 50px auto;
+            margin: 0 auto;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .input {
-            margin-top: 20px;
+        .preview {
+            width: 500px;
+            height: 500px;
+            border: 5px solid black;
+            background-color: white; /* 设置预览框的初始状态背景为白色 */
+            position: relative;
         }
 
-        .input label {
-            display: block;
-            font-size: 18px;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 5px;
+        .preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
-        .input input[type="file"] {
+        .preview .watermark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-content: space-evenly;
+        }
+
+        .preview .watermark img {
+            max-width: 20%;
+            max-height: 20%;
+            transform-origin: center center;
+        }
+
+        .preview .watermark span {
+            font-size: 20px;
+            color: white;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        .controls {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls button, input, label {
+            margin-bottom: 10px;
+        }
+
+        .controls input[type="file"] {
             display: none;
         }
 
-        .input button {
-            width: 200px;
-            height: 50px;
-            border: none;
-            border-radius: 25px;
-            background-color: #e6f7ff;
-            color: #1890ff;
-            font-size: 18px;
+        .controls label {
+            display: block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #333333;
+            color: white;
             cursor: pointer;
         }
 
-        .input button:hover {
-            background-color: #bae7ff;
+        .controls input[type="text"] {
+            padding-left: 10px; 
         }
 
-        .output {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
+        .controls input[type="range"] {
+            width: 100%;
         }
 
-        .output label {
-            display: block;
-            font-size: 18px;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 5px;
-        }
-
-        .output canvas {
-            width: 600px;
-            height: 400px;
-            border: 3px solid #333; // 加上深色边框
-        }
-
-        .output button {
-            width: 200px;
-            height: 50px;
-            border: none;
-            border-radius: 25px;
-            background-color: #e6f7ff;
-            color: #1890ff;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        .output button:hover {
-            background-color: #bae7ff;
-        }
-
-        .settings {
-            margin-left: 20px;
-        }
-
-        .settings label {
-            display: block;
-            font-size: 18px;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 5px;
-        }
-
-        .settings input[type="text"] {
-            width: 100px;
-            height: 30px;
-            border-radius: 5px; 
-        }
-
-        .settings input[type="range"] {
-            width: 200px;
-            height: 30px;
-        }
+        .controls input[type="color"] {
+          width :50%;
+          margin-left :25%;
+          margin-right :25%;
+          border-radius :10px; 
+          cursor :pointer; 
+          border :none; 
+          outline :none; 
+          height :30px; 
+          -webkit-appearance :none; 
+          -moz-appearance :none; 
+          appearance :none; 
+          background-color :white; 
+          box-shadow :inset 0 -3px rgba(0,0,0,.15); 
+          font-size :14px; 
+          color :#333333; 
+          text-align :center; 
+          vertical-align :middle; 
+          line-height :30px; 
+      }
+      .controls input[type="color"]::-webkit-color-swatch-wrapper { padding :0; }
+      .controls input[type="color"]::-webkit-color-swatch { border :none; }
+      .controls input[type="color"]::-moz-color-swatch { border :none; }
+      .controls input[type="color"]::-ms-color-swatch { border :none; }
+      .donate {
+          margin-top :20px; 
+      }
+      .donate p {
+          text-align :center; 
+      }
     </style>
 </head>
 <body>
-    <h1>图片加水印工具</h1>
+    <h1>图片水印生成器</h1>
     <div class="container">
-        <div class="input">
-          <label for="file">选择图片</label>
-          <input type="file" id="file" accept="image/*" onchange="loadImage()">
-          <button id="upload">上传图片</button>
-      </div>
-      <div class="output">
-          <div class="preview">
-              <label for="canvas">预览效果</label>
-              <canvas id="canvas"></canvas>
-              <button id="download">生成图片</button>
-          </div>
-          <div class="settings">
-              <label for="text">水印文字</label>
-              <input type="text" id="text" value="Bing" onchange="drawWatermark()">
-              <label for="number">水印数量</label>
-              <input type="range" id="number" value="5" min="1" max="100" onchange="drawWatermark()">
-              <label for="size">水印大小</label>
-              <input type="range" id="size" value="50" min="10" max="100" onchange="drawWatermark()">
-              <label for="angle">水印角度</label>
-              <input type="range" id="angle" value="-45" min="-90" max="90" onchange="drawWatermark()">
-              <label for="opacity">水印透明度</label> // 增加水印透明度选项
-              <input type="range" id="opacity" value="0.5" min="0" max="1" step ="0.01" onchange ="drawWatermark()"> // 增加水印透明度选项
-          </div>
-      </div>
+        <div class="preview">
+           <!-- 预览框 -->
+           <img id="original" src="" alt="" onerror="this.style.display='none'" onload="updateWatermark()"> <!-- 原始图片，如果加载失败，就隐藏掉，如果加载成功，就更新水印层 -->
+           <div class="watermark"> <!-- 水印层 -->
+               <!-- 水印图片和文字将动态添加到这里 -->
+           </div>
+       </div>
+       <div class="controls">
+           <!-- 控制按钮 -->
+           <input id="original-file" type="file" accept="image/*" onchange="loadOriginalImage()"> <!-- 原始图片文件选择器 -->
+           <label for="original-file">上传原始图片</label> <!-- 原始图片上传按钮 -->
+           <input id="watermark-file" type="file" accept="image/*" onchange="loadWatermarkImage()"> <!-- 水印图片文件选择器 -->
+           <label for="watermark-file">上传水印图片</label> <!-- 水印图片上传按钮 -->
+           <input id="watermark-text" type="text" placeholder="输入水印文字" oninput="updateWatermarkText()"> <!-- 水印文字输入框 -->
+           <label for="watermark-color">水印颜色</label> <!-- 水印颜色标签 -->
+           <input id="watermark-color" type="color" value="#ffffff" onchange="updateWatermarkColor()"> <!-- 水印颜色选择器 -->
+           <label for="watermark-count">水印数量</label> <!-- 水印数量标签 -->
+           <input id="watermark-count" type="range" min="1" max="10" value="1" oninput="updateWatermarkCount()"> <!-- 水印数量滑动条 -->
+           <label for="watermark-direction">水印方向</label> <!-- 水印方向标签 -->
+           <input id="watermark-direction" type="range" min="-180" max="180" value="0" oninput="           <label for="watermark-size">水印大小</label> <!-- 水印大小标签 -->
+           <input id="watermark-size" type="range" min="10" max="50" value="20" oninput="updateWatermarkSize()"> <!-- 水印大小滑动条 -->
+           <label for="watermark-angle">水印角度</label> <!-- 水印角度标签 -->
+           <input id="watermark-angle" type="range" min="-180" max="180" value="0" oninput="updateWatermarkAngle()"> <!-- 水印角度滑动条 -->
+           <label for="watermark-opacity">水印透明度</label> <!-- 水印透明度标签 -->
+           <input id="watermark-opacity" type="range" min="0" max="100" value="100" oninput="updateWatermarkOpacity()"> <!-- 水印透明度滑动条 -->
+           <div class="donate">
+               <!-- 打赏说明和二维码 -->
+               <p>如果你喜欢这个网页，欢迎打赏支持作者！</p>
+               <img src="qrcode.png" alt="打赏二维码"> <!-- 打赏二维码图片 -->
+           </div>
+       </div>
     </div>
-
     <script>
-      // 获取元素
-      var file = document.getElementById("file");
-      var upload = document.getElementById("upload");
-      var canvas = document.getElementById("canvas");
-      var download = document.getElementById("download");
-      var text = document.getElementById("text");
-      var number = document.getElementById("number");
-      var size = document.getElementById("size");
-      var angle = document.getElementById("angle");
-      var opacity = document.getElementById("opacity"); // 获取水印透明度元素
+        // 获取页面元素
+        let original = document.getElementById("original"); // 原始图片元素
+        let watermark = document.getElementsByClassName("watermark")[0]; // 水印层元素
+        let watermarkFile = document.getElementById("watermark-file"); // 水印图片文件选择器
+        let watermarkText = document.getElementById("watermark-text"); // 水印文字输入框
+        let watermarkColor = document.getElementById("watermark-color"); // 水印颜色选择器
+        let watermarkCount = document.getElementById("watermark-count"); // 水印数量滑动条
+        let watermarkDirection = document.getElementById("watermark-direction"); // 水印方向滑动条
+        let watermarkSize = document.getElementById("watermark-size"); // 水印大小滑动条
+        let watermarkAngle = document.getElementById("watermark-angle"); // 水印角度滑动条
+        let watermarkOpacity = document.getElementById("watermark-opacity"); // 水印透明度滑动条
 
-      // 创建图片对象
-      var image = new Image();
+        // 定义全局变量
+        let watermarkImage = null; // 水印图片对象
+        let watermarkTextContent = ""; // 水印文字内容
+        let watermarkColorValue = "#ffffff"; // 水印颜色值
 
-      // 创建画布上下文
-      var ctx = canvas.getContext("2d");
+        // 定义函数
 
-      // 加载图片
-      function loadImage() {
-        // 获取文件对象
-        var fileObj = file.files[0];
-        // 创建文件读取器
-        var reader = new FileReader();
-        // 读取文件为数据URL
-        reader.readAsDataURL(fileObj);
-        // 监听读取完成事件
-        reader.onload = function() {
-          // 设置图片源为数据URL
-          image.src = this.result;
-          // 监听图片加载事件
-          image.onload = function() {
-            // 绘制图片到画布
-            drawImage();
-            // 绘制水印到画布
-            drawWatermark();
-          }
+        // 加载原始图片
+        function loadOriginalImage() {
+            let file = originalFile.files[0]; // 获取原始图片文件
+            if (file) {
+                let reader = new FileReader(); // 创建文件读取器对象
+                reader.onload = function(e) {
+                    original.src = e.target.result; // 将文件读取结果设置为原始图片的源地址
+                };
+                reader.readAsDataURL(file); // 读取文件为数据URL格式
+            }
         }
-      }
 
-      // 绘制图片
-      function drawImage() {
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 计算图片缩放比例
-        var scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-        // 计算图片绘制位置和大小
-        var x = (canvas.width - image.width * scale) / 2;
-        var y = (canvas.height - image.height * scale) / 2;
-        var w = image.width * scale;
-        var h = image.height * scale;
-        // 绘制图片到画布
-        ctx.drawImage(image, x, y, w, h);
-      }
-
-      // 绘制水印
-      function drawWatermark() {
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 重新绘制图片
-        drawImage();
-        // 获取水印文字
-        var txt = text.value;
-        // 获取水印数量
-        var num = number.value;
-        // 获取水印大小
-        var s = size.value;
-        // 获取水印角度（转换为弧度）
-        var a = angle.value * Math.PI / 180;
-        // 获取水印透明度 // 获取水印透明度
-        var o = opacity.value; // 获取水印透明度
-        // 设置字体样式
-        ctx.font = s + "px Arial";
-        // 设置字体颜色（根据透明度） // 设置字体颜色（根据透明度）
-        ctx.fillStyle = "rgba(0, 0, 0, " + o + ")"; // 设置字体颜色（根据透明度）
-        // 设置文本对齐方式（居中）
-        ctx.textAlign = "center";
-        // 设置文本基线（中间）
-        ctx.textBaseline = "middle";
-        
-        // 计算水印间隔（根据角度和大小）
-        var dx = s * Math.cos(a);
-        var dy = s * Math.sin(a);
-
-        // 计算水印行数和列数（根据图片尺寸和水印数量）
-        var rows = Math.ceil(Math.sqrt(num));
-        var cols = Math.ceil(num / rows);
-
-        // 遍历水印行数和列数，绘制每个水印
-        for (var i = 0; i < rows; i++) {
-          for (var j = 0; j < cols; j++) {
-            // 计算水印索引
-            var index = i * cols + j;
-            // 如果索引超过水印数量，跳出循环
-            if (index >= num) break;
-            // 计算水印位置（根据索引和间隔）
-            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
-            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
-
-            // 保存画布状态
-            ctx.save();
-            // 移动画布原点到水印位置
-            ctx.translate(x, y);
-            // 旋转画布到水印角度
-            ctx.rotate(a);
-            // 绘制水印文字到画布
-            ctx.fillText(txt, 0, 0);
-            // 恢复画布状态
-            ctx.restore();
-          }
+        // 加载水印图片
+        function loadWatermarkImage() {
+            let file = watermarkFile.files[0]; // 获取水印图片文件
+            if (file) {
+                let reader = new FileReader(); // 创建文件读取器对象
+                reader.onload = function(e) {
+                    watermarkImage = new Image(); // 创建水印图片对象
+                    watermarkImage.src = e.target.result; // 将文件读取结果设置为水印图片的源地址
+                    updateWatermark(); // 更新水印层
+                };
+                reader.readAsDataURL(file); // 读取文件为数据URL格式
+            }
         }
-      }
 
-      // 上传图片
-      upload.onclick = function() {
-        // 触发文件选择器的点击事件
-        file.click();
-      }
-
-      // 生成图片
-      download.onclick = function() {
-        // 创建一个新的画布，用于输出图片
-        var outputCanvas = document.createElement("canvas");
-        // 设置新画布的尺寸为图片的原始尺寸
-        outputCanvas.width = image.width;
-        outputCanvas.height = image.height;
-        ctx.textAlign = "center";
-        // 设置文本基线（中间）
-        ctx.textBaseline = "middle";
-        
-        // 计算水印间隔（根据角度和大小）
-        var dx = s * Math.cos(a);
-        var dy = s * Math.sin(a);
-
-
-        // 计算水印行数和列数（根据图片尺寸和水印数量）
-        var rows = Math.ceil(Math.sqrt(num));
-        var cols = Math.ceil(num / rows);
-
-
-        // 遍历水印行数和列数，绘制每个水印
-        for (var i = 0; i < rows; i++) {
-          for (var j = 0; j < cols; j++) {
-            // 计算水印索引
-            var index = i * cols + j;
-            // 如果索引超过水印数量，跳出循环
-            if (index >= num) break;
-            // 计算水印位置（根据索引和间隔）
-            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
-            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
-
-
-            // 保存画布状态
-            ctx.save();
-            // 移动画布原点到水印位置
-            ctx.translate(x, y);
-            // 旋转画布到水印角度
-            ctx.rotate(a);
-            // 绘制水印文字到画布
-            ctx.fillText(txt, 0, 0);
-            // 恢复画布状态
-            ctx.restore();
-          }
+        // 更新水印文字
+        function updateWatermarkText() {
+            watermarkTextContent = watermarkText.value; // 获取水印文字输入框的值
+            updateWatermark(); // 更新水印层
         }
-      }
 
-
-      // 上传图片
-      upload.onclick = function() {
-        // 触发文件选择器的点击事件
-        file.click();
-      }
-
-
-      // 生成图片
-      download.onclick = function() {
-        // 创建一个新的画布，用于输出图片
-        var outputCanvas = document.createElement("canvas");
-         Set the size of the new canvas to the original size of the picture
-        outputCanvas.width = image.width;
-        outputCanvas.height = image.height;
-        ctx.textAlign = "center";
-        // 设置文本基线（中间）
-        ctx.textBaseline = "middle";
-        
-        // 计算水印间隔（根据角度和大小）
-        var dx = s * Math.cos(a);
-        var dy = s * Math.sin(a);
-
-
-        // 计算水印行数和列数（根据图片尺寸和水印数量）
-        var rows = Math.ceil(Math.sqrt(num));
-        var cols = Math.ceil(num / rows);
-
-
-        // 遍历水印行数和列数，绘制每个水印
-        for (var i = 0; i < rows; i++) {
-          for (var j = 0; j < cols; j++) {
-            // 计算水印索引
-            var index = i * cols + j;
-            // 如果索引超过水印数量，跳出循环
-            if (index >= num) break;
-            // 计算水印位置（根据索引和间隔）
-            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
-            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
-
-
-            // 保存画布状态
-            ctx.save();
-            // 移动画布原点到水印位置
-            ctx.translate(x, y);
-            // 旋转画布到水印角度
-            ctx.rotate(a);
-            // 绘制水印文字到画布
-            ctx.fillText(txt, 0, 0);
-            // 恢复画布状态
-            ctx.restore();
-          }
+        // 更新水印颜色
+        function updateWatermarkColor() {
+            watermarkColorValue = watermarkColor.value; // 获取水印颜色选择器的值
+            updateWatermark(); // 更新水印层
         }
-      }
 
-
-      // 上传图片
-      upload.onclick = function() {
-        // 触发文件选择器的点击事件
-        file.click();
-      }
-
-
-// 生成图片
-      download.onclick = function() {
-        // 创建一个新的画布，用于输出图片
-        var outputCanvas = document.createElement("canvas");
-        // 设置新画布的尺寸为图片的原始尺寸
-        outputCanvas.width = image.width;
-        outputCanvas.height = image.height;
-        // 获取新画布的上下文
-        var outputCtx = outputCanvas.getContext("2d");
-        // 绘制图片到新画布
-        outputCtx.drawImage(image, 0, 0);
-        // 绘制水印到新画布
-        drawWatermarkToOutput(outputCtx);
-        // 获取新画布的数据URL
-        var dataURL = outputCanvas.toDataURL();
-        // 创建下载链接
-        var link = document.createElement("a");
-        // 设置下载链接的属性
-        link.href = dataURL;
-        link.download = "watermarked-image.png";
-        // 触发下载链接的点击事件
-        link.click();
-      }
-
-      // 绘制水印到输出画布
-      function drawWatermarkToOutput(outputCtx) {
-        // 获取水印文字
-        var txt = text.value;
-        // 获取水印数量
-        var num = number.value;
-        // 获取水印大小
-        var s = size.value;
-        // 获取水印角度（转换为弧度）
-        var a = angle.value * Math.PI / 180;
-        // 获取水印透明度 // 获取水印透明度
-        var o = opacity.value; // 获取水印透明度
-        // 设置字体样式
-        outputCtx.font = s + "px Arial";
-        // 设置字体颜色（根据透明度） // 设置字体颜色（根据透明度）
-        outputCtx.fillStyle = "rgba(0, 0, 0, " + o + ")"; // 设置字体颜色（根据透明度）
-        // 设置文本对齐方式（居中）
-        outputCtx.textAlign = "center";
-        // 设置文本基线（中间）
-        outputCtx.textBaseline = "middle";
-        
-        // 计算水印间隔（根据角度和大小）
-        var dx = s * Math.cos(a);
-        var dy = s * Math.sin(a);
-
-        // 计算水印行数和列数（根据图片尺寸和水印数量）
-        var rows = Math.ceil(Math.sqrt(num));
-        var cols = Math.ceil(num / rows);
-
-        // 遍历水印行数和列数，绘制每个水印
-        for (var i = 0; i < rows; i++) {
-          for (var j = 0; j < cols; j++) {
-            // 计算水印索引
-            var index = i * cols + j;
-            // 如果索引超过水印数量，跳出循环
-            if (index >= num) break;
-            // 计算水印位置（根据索引和间隔）
-            var x = image.width / 2 + (j - (cols - 1) / 2) * dx;
-            var y = image.height / 2 + (i - (rows - 1) / 2) * dy;
-
-            // 保存画布状态
-            outputCtx.save();
-            // 移动画布原点到水印位置
-            outputCtx.translate(x, y);
-            // 旋转画布到水印角度
-            outputCtx.rotate(a);
-            // 绘制水印文字到画布
-            outputCtx.fillText(txt, 0, 0);
-            // 恢复画布状态
-            outputCtx.restore();
-          }
+        // 更新水印数量
+        function updateWatermarkCount() {
+            updateWatermark(); // 更新水印层
         }
-      }
+
+        // 更新水印方向
+        function updateWatermarkDirection() {
+            updateWatermark(); // 更新水印层
+        }
+
+        // 更新水印大小
+        function updateWatermarkSize() {
+            updateWatermark(); // 更新水印层
+        }
+
+        // 更新水印角度
+        function updateWatermarkAngle() {
+            updateWatermark(); // 更新水印层
+        }
+
+        // 更新水印透明度
+        function updateWatermarkOpacity() {
+            updateWatermark(); // 更新水印层
+        }
+
+        // 更新水印层
+        function updateWatermark() {
+            watermark.innerHTML = ""; // 清空水印层的内容
+            let count = parseInt(watermarkCount.value); // 获取水印数量的值，转换为整数类型
+            let direction = parseInt(watermarkDirection.value); // 获取水印方向的值，转换为整数类型，单位为度数，范围为-180到180，正数表示顺时针旋转，负数表示逆时针旋转，0表示不旋转。
+            let size = parseInt(watermarkSize.value); // 获取水印大小的值，转换为整数类型，单位为百分比，范围为10到50，表示水印图片或文字相对于预览框的最大宽度或高度的百分比。
+            let angle = parseInt(watermarkAngle.value); // 获取水印角度的值，转换为整数类型，单位为度数，范围为-180到180，正数表示顺时针旋转，负数表示逆时针旋转，0表示不旋转。
+            let opacity = parseInt(watermarkOpacity.value); // 获取水印透明度的值，转换为整数类型，单位为百分比，范围为0到100，表示水印图片或文字的不透明度。
+            for (let i = 0; i < count; i++) { // 循环添加水印图片或文字
+                if (watermarkImage) { // 如果有水印图片
+                    let img = document.createElement("img"); // 创建水印图片元素
+                    img.src = watermarkImage.src; // 设置水印图片的源地址
+                    img.style.maxWidth = size + "%"; // 设置水印图片的最大宽度
+                    img.style.maxHeight = size + "%"; // 设置水印图片的最大高度
+                    img.style.transform = "rotate(" + (direction + i * angle) + "deg)"; // 设置水印图片的旋转角度
+                    img.style.opacity = opacity / 100; // 设置水印图片的不透明度
+                    img.style.filter = "hue-rotate(" + watermarkColorValue + ")"; // 设置水印图片的颜色滤镜
+                    watermark.appendChild(img); // 将水印图片添加到水印层
+                }
+                if (watermarkTextContent) { // 如果有水印文字
+                    let span = document.createElement("span"); // 创建水印文字元素
+                    span.textContent = watermarkTextContent; // 设置水印文字的内容
+                    span.style.fontSize = size + "px"; // 设置水印文字的字号
+                    span.style.transform = "rotate(" + (direction + i * angle) + "deg)"; // 设置水印文字的旋转角度
+                    span.style.opacity = opacity / 100; // 设置水印文字的不透明度
+                    span.style.color = watermarkColorValue; // 设置水印文字的颜色值
+                    watermark.appendChild(span); // 将水印文字添加到水印层
+                }
+            }
+        }
     </script>
 </body>
 </html>
+
